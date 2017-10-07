@@ -7,87 +7,154 @@ using namespace std;
 
 
 
-struct Pessoa{
-	string nome;
-	int idade;
-	string cpf;
-	float altura;
+struct Fruta{
+	char nome[15];
+	float preco;
+	char cor[15];
 };
 
+void ler(FILE *arquivo, string nomeDoArquivo){
+    int registro;
+    Fruta fruta;
+    string enter;
+
+    //convert nomeDoArquivo to const char* with the function c_str()
+    arquivo = fopen(nomeDoArquivo.c_str(),"r+");
+
+    if(arquivo == NULL){
+        cout << "O arquivo nao existe." << endl;
+    }
+    else{
+        cout << "Digite o numero do registro que deseja ler: " << endl;
+
+        cin >> registro;
+
+        //consume the \n
+        getline(cin,enter);
+
+        //move the pointer to the position required
+        //registro - 1 because it begins from position 0
+        fseek(arquivo,(registro-1)*sizeof(Fruta),SEEK_SET);
+
+        fread(&fruta,sizeof(Fruta),1,arquivo);
+
+        //user puts a number that not correspond to the size of file
+        if(fruta.preco == 0){
+            cout << "Registro invalido." << endl;
+        }
+
+        cout << "Nome: " << fruta.nome << endl;
+        cout << "Preco: " << fruta.preco << endl;
+        cout << "Cor: " << fruta.cor << endl;
+
+
+        fclose(arquivo);
+    }
+}
+
+void escrever(FILE *arquivo, string nomeDoArquivo){
+            string name = "", color = "";
+            string enter;
+            double price;
+            int quantidade;
+
+            cout << "Quantas frutas deseja adicionar?" << endl;
+
+            cin >> quantidade;
+
+            //consume the \n
+            getline(cin,enter);
+
+            Fruta fruta[quantidade];
+
+            //remove trashes of the char[]
+            for(int i = 0;i < quantidade; i++){
+                for(int j = 0; j < 15; j++){
+                    fruta[i].nome[j] = ' ';
+                    fruta[i].cor[j] = ' ';
+                }
+            }
+
+            arquivo = fopen(nomeDoArquivo.c_str(),"w+");
+
+            for(int i = 0;i < quantidade; i++){
+                cout << "Digite o nome da fruta:" << endl;
+
+                getline(cin,name);
+
+                //pass the string name to char[] fruta.nome
+                for(int j = 0;j < name.size(); j++){
+                    fruta[i].nome[j] = name[j];
+                }
+
+                cout << "Digite o preco da fruta:" << endl;
+
+                cin >> price;
+
+                //consume the \n
+                getline(cin,enter);
+
+                fruta[i].preco = price;
+
+                cout << "Digite a cor da fruta:" << endl;
+
+                getline(cin,color);
+
+                //pass the string color to char[] fruta.cor
+                for(int j = 0;j < color.size(); j++){
+                    fruta[i].cor[j] = color[j];
+                }
+
+            }
+
+            fwrite(fruta,sizeof(Fruta),quantidade,arquivo);
+
+            fclose(arquivo);
+}
 int main() {
+    FILE *arquivo;
+    int comando;
+    string nomeDoArquivo, enter;
 
-	//arquivo que sera manipulado
-	FILE *arq;
+    cout << "Digite o nome do arquivo a ser manipulado" << endl;
 
-	//comando para abrir, ler, escrever ou fechar arquivo
-	int comando;
+    getline(cin,nomeDoArquivo);
 
-	//indice do registro
-	int i;
+    cout << "Comandos:" << endl;
+    cout << "1 - ler conteudo do arquivo" << endl;
+    cout << "2 - escrever conteudo no arquivo" << endl;
+    cout << "3 - mudar para outro arquivo" << endl;
+    cout << "4 - fechar o programa" << endl;
 
-	//contador de registros
-	int registros = 0;
+    while(cin >> comando, comando != 4){
 
-	Pessoa p;
+        //consume the \n
+        getline(cin,enter);
 
-	//abre/cria arquivo para manipular dados
-	arq = fopen("arquivo.dat","w+");
+        if(comando == 1){
+                ler(arquivo,nomeDoArquivo);
+        }
 
-	if(arq == NULL){
-		cout << "Erro na criacao/abertura do arquivo" << endl;
-		exit(1);
-	}
+        else if(comando == 2){
+                escrever(arquivo,nomeDoArquivo);
 
-	cout << "Comandos:" << endl;
-	cout << "1 - Leitura de registros do arquivo" << endl;
-	cout << "2 - Escrita de registros no arquivo" << endl;
-	cout << "3 - Fechar arquivo" << endl;
+        }
 
-	cin >> comando;
+        else if(comando == 3){
+                cout << "Digite o nome do arquivo a ser manipulado" << endl;
 
-	//usuario digitou um comando invalido
-	if(comando != 1 && comando != 2 && comando != 3){
-		cout << "Comando Invalido" << endl;
-	}
-	else{
-		//leitura
-		if(comando == 1){
-			cout << "Digite a posicao do registro (de 0 a n) que deseja ler" << endl;
+                getline(cin,nomeDoArquivo);
+        }
 
-			cin >> i;
+        //invalid command
+        else{
+            cout << "comando invalido" << endl;
+        }
 
-			//desloca o arquivo para apontar para o registro desejado pelo usuario
-			fseek(arq,i*sizeof(Pessoa),SEEK_SET);
-
-			//passa as informacoes contidas em arq para o atributo p
-			fread(&p,sizeof(Pessoa),1,arq);
-
-			cout << "Nome: " << p.nome << endl;
-			cout << "Idade: " << p.idade << endl;
-			cout << "CPF: " << p.cpf << endl;
-			cout << "Altura: " << p.altura << endl;
-		}
-		//escrita
-		else if(comando == 2){
-			cout << "Digite a posicao do registro (de 0 a n) que deseja escrever" << endl;
-
-			cin >> i;
-
-			if(i >= registros){
-				cout << "posicao invalida" << endl;
-			}
-			else{
-
-			}
-
-
-		}
-		//fechamento
-		else{
-			fclose(arq);
-
-			exit(1);
-		}
-	}
-
+        cout << "Comandos:" << endl;
+        cout << "1 - ler conteudo do arquivo" << endl;
+        cout << "2 - escrever conteudo no arquivo" << endl;
+        cout << "3 - mudar para outro arquivo" << endl;
+        cout << "4 - fechar o programa" << endl;
+    }
 }
