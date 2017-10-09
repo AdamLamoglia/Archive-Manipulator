@@ -56,13 +56,13 @@ void escrever(FILE *arquivo, string nomeDoArquivo){
             string name = "", color = "";
             string enter;
             double price;
-            int quantidade;
+            int quantidade, comando,registro;
 
             cout << "Quantas frutas deseja adicionar?" << endl;
 
             cin >> quantidade;
 
-            //consume the \n
+                        //consume the \n
             getline(cin,enter);
 
             Fruta fruta[quantidade];
@@ -75,42 +75,135 @@ void escrever(FILE *arquivo, string nomeDoArquivo){
                 }
             }
 
-            arquivo = fopen(nomeDoArquivo.c_str(),"w+");
+            //it could be a substitution of an register
+            if(quantidade == 1){
+                cout << "1 - Editar um registro" << endl;
+                cout << "2 - Criar um novo registro" << endl;
 
-            for(int i = 0;i < quantidade; i++){
-                cout << "Digite o nome da fruta:" << endl;
-
-                getline(cin,name);
-
-                //pass the string name to char[] fruta.nome
-                for(int j = 0;j < name.size(); j++){
-                    fruta[i].nome[j] = name[j];
-                }
-
-                cout << "Digite o preco da fruta:" << endl;
-
-                cin >> price;
-
-                //consume the \n
+                cin >> comando;
                 getline(cin,enter);
 
-                fruta[i].preco = price;
+                if(comando == 1){
+                    arquivo = fopen(nomeDoArquivo.c_str(),"w+");
 
-                cout << "Digite a cor da fruta:" << endl;
+                    cout << "Digite o numero do registro que deseja editar" << endl;
 
-                getline(cin,color);
+                    cin >> registro;
+                    getline(cin,enter);
 
-                //pass the string color to char[] fruta.cor
-                for(int j = 0;j < color.size(); j++){
-                    fruta[i].cor[j] = color[j];
+                    fseek(arquivo,(registro-1)*sizeof(Fruta),SEEK_SET);
+
+                    cout << "Digite o nome da fruta:" << endl;
+
+                    getline(cin,name);
+
+                    //pass the string name to char[] fruta.nome
+                    for(int j = 0;j < name.size(); j++){
+                        fruta[0].nome[j] = name[j];
+                    }
+
+                    cout << "Digite o preco da fruta:" << endl;
+
+                    cin >> price;
+
+                    //consume the \n
+                    getline(cin,enter);
+
+                    fruta[0].preco = price;
+
+                    cout << "Digite a cor da fruta:" << endl;
+
+                    getline(cin,color);
+
+                    //pass the string color to char[] fruta.cor
+                    for(int j = 0;j < color.size(); j++){
+                        fruta[0].cor[j] = color[j];
+                    }
+
+                    fwrite(fruta,sizeof(Fruta),1,arquivo);
                 }
+                else if(comando == 2){
 
+                    //a+ goes to the end of file
+                    arquivo = fopen(nomeDoArquivo.c_str(),"a+");
+
+                    cout << "Digite o nome da fruta:" << endl;
+
+                    getline(cin,name);
+
+                    //pass the string name to char[] fruta.nome
+                    for(int j = 0;j < name.size(); j++){
+                        fruta[0].nome[j] = name[j];
+                    }
+
+                    cout << "Digite o preco da fruta:" << endl;
+
+                    cin >> price;
+
+                    //consume the \n
+                    getline(cin,enter);
+
+                    fruta[0].preco = price;
+
+                    cout << "Digite a cor da fruta:" << endl;
+
+                    getline(cin,color);
+
+                    //pass the string color to char[] fruta.cor
+                    for(int j = 0;j < color.size(); j++){
+                        fruta[0].cor[j] = color[j];
+                    }
+
+                    fwrite(fruta,sizeof(Fruta),1,arquivo);
+                }
+                else{
+                    cout << "comando invalido" << endl;
+                }
             }
 
-            fwrite(fruta,sizeof(Fruta),quantidade,arquivo);
+            // quantidade > 1
+            else{
+
+                //a+ goes to the end of file
+                arquivo = fopen(nomeDoArquivo.c_str(),"a+");
+
+                 for(int i = 0;i < quantidade; i++){
+                    cout << "Digite o nome da fruta:" << endl;
+
+                    getline(cin,name);
+
+                    //pass the string name to char[] fruta.nome
+                    for(int j = 0;j < name.size(); j++){
+                        fruta[i].nome[j] = name[j];
+                    }
+
+                    cout << "Digite o preco da fruta:" << endl;
+
+                    cin >> price;
+
+                    //consume the \n
+                    getline(cin,enter);
+
+                    fruta[i].preco = price;
+
+                    cout << "Digite a cor da fruta:" << endl;
+
+                    getline(cin,color);
+
+                    //pass the string color to char[] fruta.cor
+                    for(int j = 0;j < color.size(); j++){
+                        fruta[i].cor[j] = color[j];
+                    }
+
+                }
+
+                fwrite(fruta,sizeof(Fruta),quantidade,arquivo);
+            }
 
             fclose(arquivo);
 }
+
+
 int main() {
     FILE *arquivo;
     int comando;
