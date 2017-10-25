@@ -51,58 +51,72 @@ void ler(FILE *arquivo, string nomeDoArquivo){
 
 int linearProbingInsertion(FILE *arquivo, string nomeDoArquivo){
 
-            int number;
-            int quantidade, index;
+            int number, currentNumber, quantidade, index;
 
             cout << "Quantos numeros deseja adicionar?" << endl;
 
             cin >> quantidade;
 
-            int v[quantidade];
+            arquivo = fopen(nomeDoArquivo.c_str(),"wb");
 
             for(int i = 0;i < quantidade; i++){
-                v[i] = 0;
-            }
 
-            //a+ goes to the end of file
-            arquivo = fopen(nomeDoArquivo.c_str(),"a+");
-
-            for(int i = 0;i < quantidade; i++){
                 cout << "Digite um numero inteiro maior que 0:" << endl;
 
                 cin >> number;
 
-                if(v[h1(number,quantidade)] == 0)
-                    v[h1(number,quantidade)] = number;
+                fseek(arquivo,h1(number,quantidade)*sizeof(int),SEEK_SET);
+
+                if(fread(&currentNumber,sizeof(int),1,arquivo) == 0){
+                    cout << "entrou" << endl;
+                    //fseek(arquivo,0,SEEK_CUR);
+                    fwrite(&number,sizeof(int),1,arquivo);
+
+                }
 
                 else{
-                    index = h1(number,quantidade)+1;
 
-                    while(v[index] != 0){
+                    fseek(arquivo,sizeof(int),SEEK_CUR);
 
-                        if(index == quantidade){
-                            index = 0;
+                    while(fread(&currentNumber,sizeof(int),1,arquivo) != 0){
+
+                        if(ftell(arquivo) == quantidade*sizeof(int)){
+                            fseek(arquivo,0,SEEK_SET);
                             continue;
                         }
-                        index++;
+                        fseek(arquivo,sizeof(int),SEEK_CUR);
+
                     }
-                    v[index] = number;
+
+                    index = ftell(arquivo);
+
+                    cout << index << endl;
+
+                    fseek(arquivo,index,SEEK_SET);
+                    fwrite(&number,sizeof(int),1,arquivo);
+
                 }
 
             }
+            //fwrite(&number,sizeof(int),1,arquivo);
+
+            fclose(arquivo);
+
+            arquivo = fopen(nomeDoArquivo.c_str(),"r+");
 
             for(int i = 0;i < quantidade; i++){
-                cout << v[i] << " ";
-            }
-            cout << endl;
 
-            fwrite(v,sizeof(int),quantidade,arquivo);
+                fseek(arquivo,i*sizeof(int),SEEK_SET);
+                fread(&currentNumber,sizeof(int),1,arquivo);
+                cout << i << " " << currentNumber << endl;
+            }
 
             fclose(arquivo);
 
             return quantidade;
 }
 
+/*
 int countQuantity(FILE *arquivo, string nomeDoArquivo){
     int quantidade = 0,v;
 
@@ -120,10 +134,10 @@ int countQuantity(FILE *arquivo, string nomeDoArquivo){
 
     return quantidade;
 }
-
+*/
 
 int linearProbingQuery(FILE *arquivo, string nomeDoArquivo, int element,int quantidade){
-    int searchNumber,index,read;
+    int searchNumber,index;
 
     arquivo = fopen(nomeDoArquivo.c_str(),"r+");
 
@@ -134,32 +148,30 @@ int linearProbingQuery(FILE *arquivo, string nomeDoArquivo, int element,int quan
     index = h1(element,quantidade);
 
     fseek(arquivo,h1(element,quantidade)*sizeof(int),SEEK_SET);
-
-    read = fread(&searchNumber,sizeof(int),1,arquivo);
+    fread(&searchNumber,sizeof(int),1,arquivo);
 
     if(searchNumber == element)
         return index;
+    if(index == quantidade - 1)
+        index = 0;
+    else
+        index++;
 
-    index++;
+    fseek(arquivo,index*sizeof(int),SEEK_SET);
+    fread(&searchNumber,sizeof(int),1,arquivo);
 
-    while( read != 0){
+    while( searchNumber != element){
 
-        if(searchNumber != element){
-            if(index != h1(element,quantidade)){
-                if(index != quantidade){
-                    index++;
-                    read = fread(&searchNumber,sizeof(int),1,arquivo);
-                    continue;
-                }
-                index = 0;
-                fseek(arquivo,0,SEEK_SET);
-                read = fread(&searchNumber,sizeof(int),1,arquivo);
-                continue;
-            }
-            return -1;
-        }
-        return index;
+        if(fread(&searchNumber,sizeof(int),1,arquivo) == 0);
+            break;
+
+        if(index == quantidade - 1)
+            index = 0;
+        else
+            index++;
     }
+
+    return index;
 }
 
 
@@ -202,7 +214,7 @@ int main() {
 
         else if(comando == 5){
 
-            quantidade = countQuantity(arquivo,nomeDoArquivo);
+            //quantidade = countQuantity(arquivo,nomeDoArquivo);
 
             cout << "Digite o elemento que deseja consultar" << endl;
 
